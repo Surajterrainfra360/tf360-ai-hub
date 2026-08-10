@@ -12,6 +12,8 @@ export default function HomePage() {
   const router = useRouter();
   const { user, isAdmin, isSuperAdmin, role, name, loading } = useDirectorAuth();
   const [checkingSetup, setCheckingSetup] = useState(true);
+  /** Set when the AI service can't be reached, so we never spin forever. */
+  const [reachError, setReachError] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -20,18 +22,84 @@ export default function HomePage() {
         router.replace("/setup");
         return;
       }
+      if (!res.ok && res.status === 0) setReachError(res.message);
       setCheckingSetup(false);
     })();
   }, [router]);
 
   useEffect(() => {
-    if (loading || checkingSetup) return;
+    if (loading || checkingSetup || reachError) return;
     if (!user) {
       router.replace("/login");
     } else if (!isAdmin) {
       router.replace("/access-denied");
     }
-  }, [user, isAdmin, loading, checkingSetup, router]);
+  }, [user, isAdmin, loading, checkingSetup, reachError, router]);
+
+  // The AI service is down or hung — say so instead of showing a spinner
+  // that never resolves.
+  if (reachError) {
+    return (
+      <div style={{ maxWidth: 560, margin: "80px auto", padding: "0 20px" }}>
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #e6ebf2",
+            borderLeft: "4px solid #dc2626",
+            borderRadius: 14,
+            padding: "24px 26px",
+          }}
+        >
+          <div style={{ fontSize: 17, fontWeight: 900, color: "#0f172a" }}>
+            Can&apos;t reach the AI service
+          </div>
+          <p
+            style={{
+              fontSize: 13.5,
+              color: "#475569",
+              lineHeight: 1.65,
+              margin: "10px 0 0",
+            }}
+          >
+            {reachError}
+          </p>
+          <div
+            style={{
+              background: "#0f172a",
+              color: "#e2e8f0",
+              borderRadius: 9,
+              padding: "11px 13px",
+              fontSize: 12,
+              fontFamily: "ui-monospace, monospace",
+              margin: "16px 0",
+              lineHeight: 1.7,
+            }}
+          >
+            cd ~/tf360-ai-service
+            <br />
+            source .venv/Scripts/activate
+            <br />
+            uvicorn app.main:app --reload --port 8080
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: 9,
+              padding: "10px 20px",
+              fontWeight: 800,
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading || checkingSetup || !user || !isAdmin) {
     return (
