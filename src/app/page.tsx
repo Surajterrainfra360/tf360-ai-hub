@@ -57,6 +57,13 @@ export default function HomePage() {
       enabled: true,
     },
     {
+      title: "📊 Analytics",
+      desc: "Ask plain-English questions of your data.",
+      href: "/analytics",
+      color: "#0891b2",
+      enabled: true,
+    },
+    {
       title: "👑 Manage Admins",
       desc: "Invite, remove, or change roles of admins.",
       href: "/admins",

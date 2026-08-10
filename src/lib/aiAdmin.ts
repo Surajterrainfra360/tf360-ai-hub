@@ -17,7 +17,9 @@ export type AIResult<T> =
   | { ok: true; data: T }
   | { ok: false; status: number; message: string; code?: string };
 
-async function request<TBody, TRes>(
+export { AI_BASE };
+
+export async function request<TBody, TRes>(
   path: string,
   method: "GET" | "POST" | "PUT" | "DELETE",
   body?: TBody,
